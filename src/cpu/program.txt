@@ -1,0 +1,11 @@
+# Berechnet (10 + 5) - 3, speichert und liest das Ergebnis wieder aus dem RAM
+LOAD A 10
+LOAD B 5
+ADD A B
+LOAD C 3
+SUB A C
+STORE [20] A
+PRINT A
+LOAD D [20]
+PRINT D
+STOP

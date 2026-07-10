@@ -265,12 +265,20 @@ add_executable( bench
 	src/entity2.hpp
 	src/entity3.hpp
 	src/entity4.hpp
-		src/cpu/instruction.hpp
-		src/cpu/memory.hpp
-		src/cpu/assembler.hpp
-		src/cpu/main.cpp
-		src/cpu/assembler.cpp
-		src/cpu/memory.cpp
+)
+
+add_executable( cpu
+	src/sor/core.cpp
+	src/sor/core.hpp
+
+	src/cpu/instruction.hpp
+	src/cpu/memory.hpp
+	src/cpu/memory.cpp
+	src/cpu/assembler.hpp
+	src/cpu/assembler.cpp
+	src/cpu/cpu.hpp
+	src/cpu/cpu.cpp
+	src/cpu/main.cpp
 )
 
 set_property(TARGET hello PROPERTY UNITY_BUILD ${USE_Unity_Builds})
@@ -278,6 +286,9 @@ set_property(TARGET hello PROPERTY INTERPROCEDURAL_OPTIMIZATION ${USE_IPO})
 
 set_property(TARGET bench PROPERTY UNITY_BUILD ${USE_Unity_Builds})
 set_property(TARGET bench PROPERTY INTERPROCEDURAL_OPTIMIZATION ${USE_IPO})
+
+set_property(TARGET cpu PROPERTY UNITY_BUILD ${USE_Unity_Builds})
+set_property(TARGET cpu PROPERTY INTERPROCEDURAL_OPTIMIZATION ${USE_IPO})
 
 
 if( FALSE )
@@ -321,4 +332,16 @@ target_link_libraries( bench
 
 	$<TARGET_NAME_IF_EXISTS:benchmark::benchmark>
 	$<TARGET_NAME_IF_EXISTS:benchmark::benchmark_main>
+)
+
+target_include_directories( cpu
+	PRIVATE
+	include
+)
+
+target_link_libraries( cpu
+	PRIVATE
+	$<IF:$<BOOL:${USE_FMT_HeaderOnly}>, fmt::fmt-header-only, fmt::fmt>
+
+	$<TARGET_NAME_IF_EXISTS:OpenMP::OpenMP_CXX>
 )

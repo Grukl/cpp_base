@@ -28,4 +28,6 @@ namespace MiniCPU {
         u8 operand1;
         u8 operand2;
     };
+
+    inline constexpr u8 InstructionSize = 3;
 }
