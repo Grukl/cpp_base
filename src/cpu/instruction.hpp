@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include "../sor/core.hpp"
 
 namespace MiniCPU {
@@ -13,7 +14,10 @@ namespace MiniCPU {
         Store = 0x03,
         Add = 0x04,
         Sub = 0x05,
-        Print = 0x06
+        Print = 0x06,
+        Jump = 0x07,
+        JumpZero = 0x08,
+        JumpNotZero = 0x09
     };
 
     enum class Register : u8 {
@@ -27,6 +31,11 @@ namespace MiniCPU {
         Opcode opcode;
         u8 operand1;
         u8 operand2;
+    };
+
+    struct ExecutionResult {
+        std::optional<u8> output;
+        std::optional<u8> jumpTarget;
     };
 
     inline constexpr u8 InstructionSize = 3;

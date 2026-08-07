@@ -24,7 +24,7 @@ namespace MiniCPU {
         void setRegister(Register reg, u8 value) noexcept;
 
         [[nodiscard]] DecodedInstruction fetch(const Memory& memory) const noexcept;
-        [[nodiscard]] std::optional<u8> execute(const DecodedInstruction& instruction, Memory& memory) noexcept;
+        [[nodiscard]] ExecutionResult execute(const DecodedInstruction& instruction, Memory& memory) noexcept;
 
         /*--- Anzeige/Konsolen-Ausgabe ---*/
 

@@ -1,11 +1,14 @@
-# Berechnet (10 + 5) - 3, speichert und liest das Ergebnis wieder aus dem RAM
-LOAD A 10
-LOAD B 5
-ADD A B
-LOAD C 3
-SUB A C
-STORE [20] A
-PRINT A
-LOAD D [20]
-PRINT D
+# Berechnet (10+5)-3, speichert das Ergebnis im RAM und gibt es per Schleife dreimal aus
+LADI A 10
+LADI B 5
+PLUSI A B
+LADI C 3
+MINUSI A C
+SPEICHERI [50] A
+LADI C 3
+LADI D 1
+LADI B [50]
+SCHREIBI B
+MINUSI C D
+HUEPFINICHT0 C 24
 STOP

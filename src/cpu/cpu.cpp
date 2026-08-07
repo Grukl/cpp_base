@@ -25,37 +25,47 @@ namespace MiniCPU {
         return { static_cast<Opcode>(opcodeByte), operand1, operand2 };
     }
 
-    std::optional<u8> CPU::execute(const DecodedInstruction& instruction, Memory& memory) noexcept {
+    ExecutionResult CPU::execute(const DecodedInstruction& instruction, Memory& memory) noexcept {
         switch(instruction.opcode) {
             case Opcode::LoadImm:
                 setRegister(static_cast<Register>(instruction.operand1), instruction.operand2);
-                return std::nullopt;
+                return {};
             case Opcode::LoadMem:
                 setRegister(static_cast<Register>(instruction.operand1), memory.read(instruction.operand2));
-                return std::nullopt;
+                return {};
             case Opcode::Store:
                 memory.write(instruction.operand1, registerValue(static_cast<Register>(instruction.operand2)));
-                return std::nullopt;
+                return {};
             case Opcode::Add: {
                 const auto r1 = static_cast<Register>(instruction.operand1);
                 const auto r2 = static_cast<Register>(instruction.operand2);
                 setRegister(r1, static_cast<u8>(registerValue(r1) + registerValue(r2)));
-                return std::nullopt;
+                return {};
             }
             case Opcode::Sub: {
                 const auto r1 = static_cast<Register>(instruction.operand1);
                 const auto r2 = static_cast<Register>(instruction.operand2);
                 setRegister(r1, static_cast<u8>(registerValue(r1) - registerValue(r2)));
-                return std::nullopt;
+                return {};
             }
             case Opcode::Print:
-                return registerValue(static_cast<Register>(instruction.operand1));
+                return { registerValue(static_cast<Register>(instruction.operand1)), std::nullopt };
+            case Opcode::Jump:
+                return { std::nullopt, instruction.operand2 };
+            case Opcode::JumpZero:
+                if(registerValue(static_cast<Register>(instruction.operand1)) == 0)
+                    return { std::nullopt, instruction.operand2 };
+                return {};
+            case Opcode::JumpNotZero:
+                if(registerValue(static_cast<Register>(instruction.operand1)) != 0)
+                    return { std::nullopt, instruction.operand2 };
+                return {};
             case Opcode::Stop:
                 Assert(false);
-                return std::nullopt;
+                return {};
         }
         Assert(false);
-        return std::nullopt;
+        return {};
     }
 
     void CPU::run(Memory& memory) noexcept {
@@ -65,13 +75,13 @@ namespace MiniCPU {
             const DecodedInstruction instruction = fetch(memory);
             const bool isStop = instruction.opcode == Opcode::Stop;
 
-            std::optional<u8> output;
+            ExecutionResult result;
             if(!isStop) {
-                output = execute(instruction, memory);
-                _pc += InstructionSize;
+                result = execute(instruction, memory);
+                _pc = result.jumpTarget.value_or(static_cast<u8>(_pc + InstructionSize));
             }
 
-            printStep(step, pcAtFetch, instruction, memory, output, isStop);
+            printStep(step, pcAtFetch, instruction, memory, result.output, isStop);
 
             if(isStop)
                 break;
@@ -93,17 +103,23 @@ namespace MiniCPU {
             case Opcode::Stop:
                 return "STOP";
             case Opcode::LoadImm:
-                return format("LOAD {} {}", registerLetter(static_cast<Register>(instruction.operand1)), instruction.operand2);
+                return format("LADI {} {}", registerLetter(static_cast<Register>(instruction.operand1)), instruction.operand2);
             case Opcode::LoadMem:
-                return format("LOAD {} [{}]", registerLetter(static_cast<Register>(instruction.operand1)), instruction.operand2);
+                return format("LADI {} [{}]", registerLetter(static_cast<Register>(instruction.operand1)), instruction.operand2);
             case Opcode::Store:
-                return format("STORE [{}] {}", instruction.operand1, registerLetter(static_cast<Register>(instruction.operand2)));
+                return format("SPEICHERI [{}] {}", instruction.operand1, registerLetter(static_cast<Register>(instruction.operand2)));
             case Opcode::Add:
-                return format("ADD {} {}", registerLetter(static_cast<Register>(instruction.operand1)), registerLetter(static_cast<Register>(instruction.operand2)));
+                return format("PLUSI {} {}", registerLetter(static_cast<Register>(instruction.operand1)), registerLetter(static_cast<Register>(instruction.operand2)));
             case Opcode::Sub:
-                return format("SUB {} {}", registerLetter(static_cast<Register>(instruction.operand1)), registerLetter(static_cast<Register>(instruction.operand2)));
+                return format("MINUSI {} {}", registerLetter(static_cast<Register>(instruction.operand1)), registerLetter(static_cast<Register>(instruction.operand2)));
             case Opcode::Print:
-                return format("PRINT {}", registerLetter(static_cast<Register>(instruction.operand1)));
+                return format("SCHREIBI {}", registerLetter(static_cast<Register>(instruction.operand1)));
+            case Opcode::Jump:
+                return format("HUEPFI {}", instruction.operand2);
+            case Opcode::JumpZero:
+                return format("HUEPFI0 {} {}", registerLetter(static_cast<Register>(instruction.operand1)), instruction.operand2);
+            case Opcode::JumpNotZero:
+                return format("HUEPFINICHT0 {} {}", registerLetter(static_cast<Register>(instruction.operand1)), instruction.operand2);
         }
         Assert(false);
         return "UNKNOWN";
